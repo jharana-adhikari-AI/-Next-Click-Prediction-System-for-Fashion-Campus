@@ -107,7 +107,7 @@ Users often leave without completing purchases due to lack of relevant recommend
 
 ## 📽️ PPT Presentation
 
-You can find the [presentation slides here](link-to-ppt-if-uploaded-or-included-in-repo).
+You can find the [presentation slides here](https://github.com/jharana-adhikari-AI/-Next-Click-Prediction-System-for-Fashion-Campus/blob/main/Presentation.pdf).
 
 ---
 
