@@ -1,0 +1,13 @@
+# Lightweight inference-only dependencies for Render deployment
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+
+# ML Inference
+onnxruntime==1.17.0
+numpy==1.26.3
+pandas==2.1.5
+gensim==4.3.2
+scikit-learn==1.4.0
+scipy==1.12.0
+tensorflow-cpu==2.15.0
