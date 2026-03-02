@@ -5,6 +5,7 @@ const navLinks = [
   { path: '/catalog', label: 'Catalog' },
   { path: '/predict', label: 'Predict' },
   { path: '/compare', label: 'Compare' },
+  { path: '/contact', label: 'Contact' },
 ];
 
 export default function Header() {

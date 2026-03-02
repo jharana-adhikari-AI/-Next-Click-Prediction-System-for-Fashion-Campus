@@ -7,12 +7,19 @@ import os
 import json
 import pickle
 import numpy as np
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from typing import List, Optional
 from contextlib import asynccontextmanager
+from dotenv import load_dotenv
 
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
+
+# Load environment variables
+load_dotenv()
 
 # ─── Try ONNX first (lightweight), fallback to Keras ───
 USE_ONNX = False
@@ -45,6 +52,13 @@ class PredictionRequest(BaseModel):
 class SimilarRequest(BaseModel):
     product_id: str
     top_k: int = 5
+
+
+class ContactRequest(BaseModel):
+    name: str
+    email: EmailStr
+    subject: str
+    message: str
 
 
 # ─── Lifespan: load models at startup ───
@@ -261,6 +275,90 @@ def get_similar_products(req: SimilarRequest):
 @app.get("/model-info")
 def get_model_info():
     return models["metadata"]
+
+
+@app.post("/contact")
+def send_contact_email(req: ContactRequest):
+    """Send contact form email via Gmail SMTP"""
+    try:
+        # Email configuration from environment variables
+        smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
+        smtp_port = int(os.getenv("SMTP_PORT", "587"))
+        smtp_user = os.getenv("SMTP_USER")
+        smtp_pass = os.getenv("SMTP_PASS")
+        contact_email = os.getenv("CONTACT_EMAIL", smtp_user)
+
+        if not smtp_user or not smtp_pass:
+            raise HTTPException(500, "Email service not configured")
+
+        # Create email message
+        msg = MIMEMultipart("alternative")
+        msg["From"] = smtp_user
+        msg["To"] = contact_email
+        msg["Subject"] = f"Contact Form: {req.subject}"
+        msg["Reply-To"] = req.email
+
+        # Email body (plain text and HTML)
+        text_body = f"""
+New Contact Form Submission
+
+From: {req.name}
+Email: {req.email}
+Subject: {req.subject}
+
+Message:
+{req.message}
+
+---
+Sent from Fashion Campus Next-Click Prediction System
+        """
+
+        html_body = f"""
+<html>
+  <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+      <h2 style="color: #4F46E5; border-bottom: 2px solid #4F46E5; padding-bottom: 10px;">
+        New Contact Form Submission
+      </h2>
+
+      <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        <p><strong>From:</strong> {req.name}</p>
+        <p><strong>Email:</strong> <a href="mailto:{req.email}">{req.email}</a></p>
+        <p><strong>Subject:</strong> {req.subject}</p>
+      </div>
+
+      <div style="margin: 20px 0;">
+        <h3 style="color: #333;">Message:</h3>
+        <p style="background-color: #fff; padding: 15px; border-left: 4px solid #4F46E5; white-space: pre-wrap;">{req.message}</p>
+      </div>
+
+      <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+      <p style="color: #888; font-size: 12px; text-align: center;">
+        Sent from Fashion Campus Next-Click Prediction System
+      </p>
+    </div>
+  </body>
+</html>
+        """
+
+        msg.attach(MIMEText(text_body, "plain"))
+        msg.attach(MIMEText(html_body, "html"))
+
+        # Send email
+        with smtplib.SMTP(smtp_host, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_pass)
+            server.send_message(msg)
+
+        return {
+            "status": "success",
+            "message": "Email sent successfully"
+        }
+
+    except smtplib.SMTPException as e:
+        raise HTTPException(500, f"Failed to send email: {str(e)}")
+    except Exception as e:
+        raise HTTPException(500, f"Server error: {str(e)}")
 
 
 if __name__ == "__main__":
