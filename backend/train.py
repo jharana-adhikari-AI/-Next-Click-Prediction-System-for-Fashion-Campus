@@ -36,7 +36,7 @@ GRU_EMBEDDING_DIM = 64
 MAX_SEQ_LEN = 10
 BATCH_SIZE = 64
 EPOCHS = 10
-NUM_SESSIONS = 8000
+NUM_SESSIONS = 20000  # Coverage pass needs ~10K sessions for 44K products, rest are random
 RANDOM_SEED = 42
 
 

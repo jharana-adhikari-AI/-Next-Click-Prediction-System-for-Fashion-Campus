@@ -1,0 +1,20 @@
+{
+  "num_products": 44424,
+  "num_sessions": 20000,
+  "num_training_samples": 74626,
+  "num_classes": 44424,
+  "max_seq_len": 10,
+  "w2v_vector_size": 64,
+  "gru_units": 64,
+  "markov_states": 38940,
+  "markov_accuracy": {
+    "top1": 0.5635,
+    "top3": 0.8651
+  },
+  "gru_accuracy": {
+    "top1": 0.0528,
+    "top3": 0.0574
+  },
+  "gru_val_accuracy": 0.0532,
+  "gru_val_loss": 10.7175
+}
